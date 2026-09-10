@@ -45,15 +45,3 @@ export const getAllInterviewReports = async () => {
 
     return response.data
 }
-
-
-/**
- * @description Service to generate resume pdf based on user self description, resume content and job description.
- */
-export const generateResumePdf = async ({ interviewReportId }) => {
-    const response = await api.post(`/api/interview/resume/pdf/${interviewReportId}`, null, {
-        responseType: "blob"
-    })
-
-    return response.data
-}
