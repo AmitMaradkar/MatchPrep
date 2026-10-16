@@ -1,13 +1,23 @@
 require("dotenv").config()
-const app = require("./src/app")
 
-// Export the app for Vercel Serverless
-module.exports = app
+let app
+let initError = null
 
-// Only start listening on port in standalone/local development
-if (process.env.NODE_ENV !== "production") {
-    const PORT = process.env.PORT || 3000
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`)
-    })
+try {
+    app = require("./src/app")
+} catch (err) {
+    initError = err
+    console.error("CRITICAL: Failed to load Express app:", err)
+}
+
+module.exports = (req, res) => {
+    if (initError || !app) {
+        return res.status(500).json({
+            error: "Application Initialization Failed",
+            message: initError ? initError.message : "Express app is not initialized",
+            details: initError ? initError.stack : null
+        })
+    }
+
+    return app(req, res)
 }
