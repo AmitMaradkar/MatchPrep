@@ -2,9 +2,19 @@ const { GoogleGenAI } = require("@google/genai")
 const { z } = require("zod")
 const { zodToJsonSchema } = require("zod-to-json-schema")
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_GENAI_API_KEY
-})
+let aiInstance = null
+
+function getAiClient() {
+    if (!aiInstance) {
+        if (!process.env.GOOGLE_GENAI_API_KEY) {
+            throw new Error("GOOGLE_GENAI_API_KEY is not defined in environment variables.")
+        }
+        aiInstance = new GoogleGenAI({
+            apiKey: process.env.GOOGLE_GENAI_API_KEY
+        })
+    }
+    return aiInstance
+}
 
 
 const interviewReportSchema = z.object({
@@ -40,6 +50,7 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
                         Job Description: ${jobDescription}
 `
 
+    const ai = getAiClient()
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: prompt,

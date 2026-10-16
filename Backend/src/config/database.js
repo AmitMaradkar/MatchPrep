@@ -11,8 +11,15 @@ async function connectToDB() {
         return cached.conn
     }
 
+    if (!process.env.MONGO_URI) {
+        console.error("MONGO_URI is missing from environment variables.")
+        throw new Error("MONGO_URI environment variable is not defined.")
+    }
+
     if (!cached.promise) {
-        cached.promise = mongoose.connect(process.env.MONGO_URI).then((mongooseInstance) => {
+        cached.promise = mongoose.connect(process.env.MONGO_URI, {
+            serverSelectionTimeoutMS: 5000,
+        }).then((mongooseInstance) => {
             console.log("Connected to Database")
             return mongooseInstance
         })
@@ -22,7 +29,7 @@ async function connectToDB() {
         cached.conn = await cached.promise
     } catch (err) {
         cached.promise = null
-        console.error("Database connection error:", err)
+        console.error("Database connection error:", err.message)
         throw err
     }
 
